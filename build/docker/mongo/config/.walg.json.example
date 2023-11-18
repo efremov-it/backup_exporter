@@ -1,0 +1,16 @@
+{
+"MONGODB_URI" : "mongodb://user:password@localhost:27017/?authSource=admin&connect=direct&socketTimeoutMS=60000&connectTimeoutMS=10000&tls=false",
+"OPLOG_ARCHIVE_TIMEOUT_INTERVAL" : "30s",
+"OPLOG_ARCHIVE_AFTER_SIZE" :       "20971520",
+"OPLOG_PITR_DISCOVERY_INTERVAL" : "168h",
+"WALG_STREAM_CREATE_COMMAND" :  "mongodump --archive --uri=\"mongodb://user:password@localhost:27017/?authSource=admin&connectTimeoutMS=10000&tls=false\"",
+"WALG_STREAM_RESTORE_COMMAND" : "mongorestore --archive --uri=\"mongodb://user:password@localhost:27017/?authSource=admin&connectTimeoutMS=10000&tls=false\"",
+"AWS_ACCESS_KEY_ID": "access_key",
+"AWS_SECRET_ACCESS_KEY": "secret_key",
+"AWS_REGION": "eu-central-1",
+"AWS_ENDPOINT": "https://api.c1.de.s3.teamlead.com/",
+"AWS_S3_FORCE_PATH_STYLE": "true",
+"WALE_S3_PREFIX": "s3://example.com/bucket/key",
+"WALG_STREAM_SPLITTER_PARTITIONS": "6",
+"WALG_COMPRESSION_METHOD": "brotli"
+}

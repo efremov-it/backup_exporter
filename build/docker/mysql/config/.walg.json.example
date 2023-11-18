@@ -1,0 +1,16 @@
+{
+"WALG_MYSQL_DATASOURCE_NAME": "user:password@tcp(localhost:3306)/mydatabase",
+"WALG_STREAM_CREATE_COMMAND": "xtrabackup --backup --stream=xbstream --datadir=/var/lib/mysql",
+"WALG_STREAM_RESTORE_COMMAND": "xbstream -x -C /var/lib/mysql",
+"WALG_MYSQL_BACKUP_PREPARE_COMMAND": "xtrabackup --prepare --target-dir=/var/lib/mysql",
+"WALG_MYSQL_BINLOG_REPLAY_COMMAND": "mysqlbinlog --stop-datetime=\"$WALG_MYSQL_BINLOG_END_TS\" \"$WALG_MYSQL_CURRENT_BINLOG\" | mysql",
+"WALG_MYSQL_BINLOG_DST":"/var/lib/mysql/my-binlogs",
+"AWS_ACCESS_KEY_ID": "access_key",
+"AWS_SECRET_ACCESS_KEY": "secret_key",
+"AWS_REGION": "eu-central-1",
+"AWS_ENDPOINT": "https://api.example.com",
+"AWS_S3_FORCE_PATH_STYLE": "true",
+"WALE_S3_PREFIX": "s3://bucket/key/",
+"WALG_STREAM_SPLITTER_PARTITIONS": "6",
+"WALG_COMPRESSION_METHOD": "brotli"
+}

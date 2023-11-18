@@ -1,0 +1,16 @@
+{
+
+    "AWS_ENDPOINT": "https://api.example.com",
+    "AWS_S3_FORCE_PATH_STYLE": true,
+    "WALG_S3_PREFIX": "s3://bucket/key",
+    "AWS_REGION": "eu-central-1",
+    "AWS_ACCESS_KEY_ID": "access_key",
+    "AWS_SECRET_ACCESS_KEY": "secret_key",
+    "WALG_COMPRESSION_METHOD": "brotli",
+    "PGDATA": "/var/lib/postgresql/data",
+    "PGHOST": "/var/run/postgresql/.s.PGSQL.5432",
+    "WALG_UPLOAD_CONCURRENCY": "2",
+    "WALG_DOWNLOAD_CONCURRENCY": "4",
+    "WALG_UPLOAD_DISK_CONCURRENCY": "2",
+    "WALG_DELTA_MAX_STEPS": "7"
+}
