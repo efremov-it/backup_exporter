@@ -9,15 +9,22 @@ import (
 )
 
 type CollectorMetrics struct {
-	mutex          sync.RWMutex
-	result         Result
-	config         *config.Config
-	BackupStatus   *prometheus.Desc
-	BackupDuration *prometheus.Desc
-	BackupNextTime *prometheus.Desc
+	mutex                sync.RWMutex
+	resultCreate         ResultCreate
+	resultRetain         ResultRetain
+	config               *config.Config
+	BackupCreateStatus   *prometheus.Desc
+	BackupCreateDuration *prometheus.Desc
+	BackupRetainStatus   *prometheus.Desc
+	BackupRetainDuration *prometheus.Desc
 }
 
-type Result struct {
+type ResultCreate struct {
+	BackupStartTime time.Time
+	BackupDuration  float64
+	BackupStatus    int
+}
+type ResultRetain struct {
 	BackupStartTime time.Time
 	BackupDuration  float64
 	BackupStatus    int
@@ -26,16 +33,20 @@ type Result struct {
 func NewCollector(config *config.Config) *CollectorMetrics {
 	labelNames := []string{"backup_type", "project_name", "instance_name"}
 	return &CollectorMetrics{
-		BackupStatus: prometheus.V2.NewDesc("backup_status",
+		BackupCreateStatus: prometheus.V2.NewDesc("backup_create_status",
 			"Show backup status",
 			prometheus.UnconstrainedLabels(labelNames),
 			prometheus.Labels(nil)),
-		BackupDuration: prometheus.V2.NewDesc("backup_duration",
+		BackupCreateDuration: prometheus.V2.NewDesc("backup_create_duration",
 			"Show backup duration",
 			prometheus.UnconstrainedLabels(labelNames),
 			prometheus.Labels(nil)),
-		BackupNextTime: prometheus.V2.NewDesc("backup_next_time",
-			"Show when the next backup will be created",
+		BackupRetainStatus: prometheus.V2.NewDesc("backup_retain_status",
+			"Show backup retain status (only for postgresql)",
+			prometheus.UnconstrainedLabels(labelNames),
+			prometheus.Labels(nil)),
+		BackupRetainDuration: prometheus.V2.NewDesc("backup_retain_duration",
+			"Show backup retain duration (only for postgresql)",
 			prometheus.UnconstrainedLabels(labelNames),
 			prometheus.Labels(nil)),
 		config: config,
@@ -44,9 +55,10 @@ func NewCollector(config *config.Config) *CollectorMetrics {
 
 func (collector *CollectorMetrics) Describe(ch chan<- *prometheus.Desc) {
 	ds := []*prometheus.Desc{
-		collector.BackupStatus,
-		collector.BackupDuration,
-		collector.BackupNextTime,
+		collector.BackupCreateStatus,
+		collector.BackupCreateDuration,
+		collector.BackupRetainStatus,
+		collector.BackupRetainDuration,
 	}
 
 	for _, d := range ds {
@@ -58,23 +70,42 @@ func (c *CollectorMetrics) Collect(ch chan<- prometheus.Metric) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
-	ch <- prometheus.NewMetricWithTimestamp(c.result.BackupStartTime, prometheus.MustNewConstMetric(
-		c.BackupDuration,
+	ch <- prometheus.NewMetricWithTimestamp(c.resultCreate.BackupStartTime, prometheus.MustNewConstMetric(
+		c.BackupCreateDuration,
 		prometheus.GaugeValue,
-		c.result.BackupDuration,
+		c.resultCreate.BackupDuration,
 		c.config.BackupType, c.config.ProjectName, c.config.Host,
 	))
-	ch <- prometheus.NewMetricWithTimestamp(c.result.BackupStartTime, prometheus.MustNewConstMetric(
-		c.BackupStatus,
+	ch <- prometheus.NewMetricWithTimestamp(c.resultCreate.BackupStartTime, prometheus.MustNewConstMetric(
+		c.BackupCreateStatus,
 		prometheus.GaugeValue,
-		float64(c.result.BackupStatus),
+		float64(c.resultCreate.BackupStatus),
+		c.config.BackupType, c.config.ProjectName, c.config.Host,
+	))
+	ch <- prometheus.NewMetricWithTimestamp(c.resultRetain.BackupStartTime, prometheus.MustNewConstMetric(
+		c.BackupRetainDuration,
+		prometheus.GaugeValue,
+		c.resultRetain.BackupDuration,
+		c.config.BackupType, c.config.ProjectName, c.config.Host,
+	))
+	ch <- prometheus.NewMetricWithTimestamp(c.resultRetain.BackupStartTime, prometheus.MustNewConstMetric(
+		c.BackupRetainStatus,
+		prometheus.GaugeValue,
+		float64(c.resultRetain.BackupStatus),
 		c.config.BackupType, c.config.ProjectName, c.config.Host,
 	))
 }
 
-func (c *CollectorMetrics) SetResult(result Result) {
+func (c *CollectorMetrics) SetResultCreate(result ResultCreate) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	c.result = result
+	c.resultCreate = result
+}
+
+func (c *CollectorMetrics) SetResultRetain(result ResultRetain) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	c.resultRetain = result
 }

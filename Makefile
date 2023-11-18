@@ -21,11 +21,11 @@ all: down up
 
 test:
 	go build -o app/main cmd/main.go
-	docker compose exec -u postgres postgres /app/main --project test --backup_type psql --backup_cron "*/1 * * * *"
+	docker compose exec -u postgres postgres /app/main --project test --backup_type psql --backup_cron "*/1 * * * *" --delete_cron "*/1 * * * *" --delete_retain 5
 
 tc:
 	go build -o app/main cmd/main.go
-	docker compose exec -u postgres postgres /app/main --project test --backup_type psql --config_file /var/lib/postgre
+	docker compose exec -u postgres postgres /app/main --project test --backup_type psql
 
 tm:
 	go build -o app/main cmd/main.go
@@ -35,9 +35,7 @@ tmy:
 	docker compose exec -u mysql mysql /app/main --project test --backup_type mysql --backup_cron "*/1 * * * *"
 tmd:
 	go build -o app/main cmd/main.go
-	docker compose exec -u mongodb mongo wal-g backup-list
-	docker compose exec -u mongodb mongo wal-g delete retain FULL 5 --confirm
-	docker compose exec -u mongodb mongo /app/main --project test --backup_type mongodb --backup_cron "*/1 * * * *"
+	docker compose exec -u mongodb mongo /app/main --project test --backup_type mongodb --backup_cron "*/1 * * * *" --delete_cron "*/1 * * * *" --delete_retain 5
 	
 
 

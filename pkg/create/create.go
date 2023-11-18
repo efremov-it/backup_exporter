@@ -24,7 +24,7 @@ type BackupService struct {
 	metrics *collector.CollectorMetrics
 }
 
-func (bs *BackupService) Run(ctx context.Context) {
+func (bs *BackupService) Create(ctx context.Context) {
 	var command string
 	var use_flags []string
 	// set backup command and arguments
@@ -47,15 +47,15 @@ func (bs *BackupService) Run(ctx context.Context) {
 	// create backup
 	n := 0
 	for n < 3 {
-		result, err := backup(command, use_flags...)
+		t, d, s, err := backup(command, use_flags...)
 		if err != nil {
-			bs.metrics.SetResult(result)
+			bs.metrics.SetResultCreate(collector.ResultCreate{t, d, s})
 			fmt.Fprint(os.Stdout, []any{"Backup failed\nStart backup one more time\n"}...)
 			time.Sleep(5 * time.Second)
 		} else {
 			n = 3
 			print("Backup created\n")
-			bs.metrics.SetResult(result)
+			bs.metrics.SetResultCreate(collector.ResultCreate{t, d, s})
 			return
 		}
 		n++
@@ -64,12 +64,13 @@ func (bs *BackupService) Run(ctx context.Context) {
 
 func (bs *BackupService) Retain(ctx context.Context) {
 	var use_flags []string
-	// for psql we need to use BackupStorage
 	if bs.config.BackupType == "psql" {
 		if bs.config.DeleteRetain != "" {
 			use_flags = append(use_flags, "delete", "retain", "FULL", bs.config.DeleteRetain, "--confirm")
 		}
 		use_flags = append(use_flags, bs.config.BackupStorage)
+	} else {
+		print("Retain backup support only for postgresql\n")
 	}
 
 	if bs.config.ConfigFile != "" {
@@ -77,29 +78,29 @@ func (bs *BackupService) Retain(ctx context.Context) {
 	}
 
 	// Retain backup
-	result, err := backup("wal-g", use_flags...)
+	t, d, s, err := backup("wal-g", use_flags...)
 	if err != nil {
-		bs.metrics.SetResult(result)
+		bs.metrics.SetResultRetain(collector.ResultRetain{t, d, s})
 		fmt.Fprint(os.Stdout, []any{"Retain backup failed\n"}...)
 	} else {
 		print("Retain backup finished\n")
-		bs.metrics.SetResult(result)
+		bs.metrics.SetResultRetain(collector.ResultRetain{t, d, s})
 		return
 	}
 }
 
-func backup(command string, args ...string) (result collector.Result, err error) {
-	result.BackupStartTime = time.Now()
+func backup(command string, args ...string) (startTime time.Time, duration float64, status int, err error) {
+	startTime = time.Now()
 	cmd := exec.Command(command, args...)
 	output, err := cmd.CombinedOutput()
 
 	defer func() {
-		result.BackupDuration = float64(time.Since(result.BackupStartTime).Seconds())
+		duration = float64(time.Since(startTime).Seconds())
 		if err != nil {
-			result.BackupStatus = 1
+			status = 1
 			log.Printf("Error:\n", err, string(output))
 		} else {
-			result.BackupStatus = 0
+			status = 0
 			log.Printf("Command Output: %s\n", string(output))
 		}
 	}()
