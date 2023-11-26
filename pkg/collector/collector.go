@@ -10,8 +10,8 @@ import (
 
 type CollectorMetrics struct {
 	mutex                sync.RWMutex
-	resultCreate         ResultCreate
-	resultRetain         ResultRetain
+	resultCreate         Result
+	resultRetain         Result
 	config               *config.Config
 	BackupCreateStatus   *prometheus.Desc
 	BackupCreateDuration *prometheus.Desc
@@ -19,12 +19,7 @@ type CollectorMetrics struct {
 	BackupRetainDuration *prometheus.Desc
 }
 
-type ResultCreate struct {
-	BackupStartTime time.Time
-	BackupDuration  float64
-	BackupStatus    int
-}
-type ResultRetain struct {
+type Result struct {
 	BackupStartTime time.Time
 	BackupDuration  float64
 	BackupStatus    int
@@ -96,14 +91,14 @@ func (c *CollectorMetrics) Collect(ch chan<- prometheus.Metric) {
 	))
 }
 
-func (c *CollectorMetrics) SetResultCreate(result ResultCreate) {
+func (c *CollectorMetrics) SetResultCreate(result Result) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
 	c.resultCreate = result
 }
 
-func (c *CollectorMetrics) SetResultRetain(result ResultRetain) {
+func (c *CollectorMetrics) SetResultRetain(result Result) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 

@@ -47,10 +47,10 @@ func (bs *BackupService) Create(ctx context.Context) {
 	// create backup. if backup failed try do it again 3 times
 	for i := 0; i < 3; i++ {
 		t, d, s, err := backup(command, use_flags...)
-		bs.metrics.SetResultCreate(collector.ResultCreate{t, d, s})
+		bs.metrics.SetResultCreate(collector.Result{t, d, s})
 		if err != nil {
 			fmt.Fprint(os.Stdout, []any{"Backup failed\nStart backup one more time\n"}...)
-			time.Sleep(5 * time.Second)
+			time.Sleep(10 * time.Second)
 		} else {
 			print("Backup created\n")
 			return
@@ -76,7 +76,7 @@ func (bs *BackupService) Retain(ctx context.Context) {
 
 	// Retain backup
 	t, d, s, err := backup("wal-g", use_flags...)
-	bs.metrics.SetResultRetain(collector.ResultRetain{t, d, s})
+	bs.metrics.SetResultRetain(collector.Result{t, d, s})
 	if err != nil {
 		fmt.Fprint(os.Stdout, []any{"Retain backup failed\n"}...)
 	} else {
