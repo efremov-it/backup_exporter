@@ -1,3 +1,4 @@
 /build/docker/*/data
 /build/docker/*/*/.walg.json
 /build/docker/*/*/config.yml
+/.vscode

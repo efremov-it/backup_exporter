@@ -1,4 +1,5 @@
 .DEFAULT_GOAL := up
+LIST := psql mysql mongo mariadb
 
 up:
 	docker compose up -d
@@ -15,9 +16,17 @@ exec:
 create:
 	docker compose exec -u postgres postgres wal-g backup-push /var/lib/postgresql/data
 
-all: down up
+all: down config up 
 	@make -s create
-	docker compose logs postgres
+	@docker compose logs postgres
+	@echo your developer Environment is ready.
+
+
+config:
+	@for i in ${LIST};do [ -f build/docker/$$i/config/.walg.json ] ||\
+	cp build/docker/$$i/config/.walg.json.example build/docker/$$i/config/.walg.json;done
+	@[ -f build/docker/clickhouse/config/config.yml ] ||\
+	cp build/docker/clickhouse/config/config.yml.example build/docker/clickhouse/config/config.yml
 
 test:
 	go build -o app/main cmd/main.go
@@ -25,7 +34,7 @@ test:
 
 tc:
 	go build -o app/main cmd/main.go
-	docker compose exec -u postgres postgres /app/main --project test --backup_type psql
+	docker compose exec -u postgres postgres /app/main --project test --backup_type psqlq
 
 tm:
 	go build -o app/main cmd/main.go
@@ -41,7 +50,10 @@ tmd:
 
 tch:
 	go build -o app/main cmd/main.go
-	docker compose exec -u clickhouse clickhouse /app/main --project test --backup_type clickhouse
+	docker compose exec -u clickhouse clickhouse /app/main --project test --backup_type clickhouse --backup_cron "*/1 * * * *"
+
+curl:
+	docker compose exec postgres curl localhost:9023/metrics|grep backup
 
 
 .PHONY: up down build exec create all

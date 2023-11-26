@@ -19,6 +19,7 @@ import (
 )
 
 func main() {
+
 	config, err := config.ParseFlags()
 	if err != nil {
 		log.Fatal("Error parsing flags:\n", err)
@@ -33,14 +34,10 @@ func main() {
 	backupService := create.NewBackupService(config, collectorVars)
 
 	// create backup
-	if err := c.AddJob("Backup", config.CronTime, backupService.Create); err != nil {
-		panic(err)
-	}
+	NoError(c.AddJob("Backup", config.CronTime, backupService.Create))
 	// retain Backup for postgresql.
 	if config.DeleteEnable {
-		if err := c.AddJob("Backup-Retain", config.DeleteCronTime, backupService.Retain); err != nil {
-			panic(err)
-		}
+		NoError(c.AddJob("Backup-Retain", config.DeleteCronTime, backupService.Retain))
 	}
 	// Create a Prometheus registry
 	mux := http.NewServeMux()
@@ -58,8 +55,18 @@ func main() {
 	}); err != nil {
 		panic(err)
 	}
-	if err := c.Run(ctx); err != nil {
+	NoError(c.Run(ctx))
+
+}
+
+//	func Must[T any](v T, err error) T {
+//		if err != nil {
+//			panic(err)
+//		}
+//		return v
+//	}
+func NoError(err error) {
+	if err != nil {
 		panic(err)
 	}
-
 }

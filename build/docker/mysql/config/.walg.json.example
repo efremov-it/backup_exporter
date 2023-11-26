@@ -5,12 +5,12 @@
 "WALG_MYSQL_BACKUP_PREPARE_COMMAND": "xtrabackup --prepare --target-dir=/var/lib/mysql",
 "WALG_MYSQL_BINLOG_REPLAY_COMMAND": "mysqlbinlog --stop-datetime=\"$WALG_MYSQL_BINLOG_END_TS\" \"$WALG_MYSQL_CURRENT_BINLOG\" | mysql",
 "WALG_MYSQL_BINLOG_DST":"/var/lib/mysql/my-binlogs",
-"AWS_ACCESS_KEY_ID": "access_key",
-"AWS_SECRET_ACCESS_KEY": "secret_key",
+"AWS_ACCESS_KEY_ID": "my_local_user",
+"AWS_SECRET_ACCESS_KEY": "my_local_password",
 "AWS_REGION": "eu-central-1",
-"AWS_ENDPOINT": "https://api.example.com",
+"AWS_ENDPOINT": "http://minio:9000",
 "AWS_S3_FORCE_PATH_STYLE": "true",
-"WALE_S3_PREFIX": "s3://bucket/key/",
+"WALE_S3_PREFIX": "s3://my-local-bucket/mysql/",
 "WALG_STREAM_SPLITTER_PARTITIONS": "6",
 "WALG_COMPRESSION_METHOD": "brotli"
 }

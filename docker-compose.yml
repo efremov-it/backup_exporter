@@ -16,8 +16,9 @@ services:
       - ./build/docker/psql/config/.walg.json:/var/lib/postgresql/.walg.json
       - ./build/docker/psql/config/postgresql.conf:/etc/postgresql/postgresql.conf
       - ./app:/app
-    ports:
-      - "9023:9023"
+    depends_on:
+      minio:
+        condition: service_healthy
   mariadb:
     image: mariadb-test
     container_name: mariadb-test
@@ -34,6 +35,9 @@ services:
       - ./build/docker/mariadb/config/.walg.json:/var/lib/mysql/.walg.json
       - ./build/docker/mariadb/config/.my.cnf:/var/lib/mysql/.my.cnf
       - ./app:/app
+    depends_on:
+      minio:
+        condition: service_healthy
   mysql:
     image: mysql-test
     container_name: mysql-test
@@ -50,6 +54,9 @@ services:
       - ./build/docker/mysql/config/.walg.json:/var/lib/mysql/.walg.json
       - ./build/docker/mysql/config/.my.cnf:/var/lib/mysql/.my.cnf
       - ./app:/app
+    depends_on:
+      minio:
+        condition: service_healthy
   mongo:
     image: mongo-test
     container_name: mongo-test
@@ -63,6 +70,9 @@ services:
       - ./build/docker/mongo/data:/data/db
       - ./build/docker/mongo/config/.walg.json:/data/db/.walg.json
       - ./app:/app
+    depends_on:
+      minio:
+        condition: service_healthy
   clickhouse:
     image: clickhouse-test
     container_name: clickhouse-test
@@ -83,3 +93,23 @@ services:
       - ./build/docker/clickhouse/config/config.yml:/etc/clickhouse-backup/config.yml
       - ./build/docker/clickhouse/init-scripts:/docker-entrypoint-initdb.d
       - ./app:/app
+    depends_on:
+      minio:
+        condition: service_healthy
+
+  minio:
+    image: docker.io/bitnami/minio:2023-debian-11
+    container_name: minio-test
+    # ports:
+    #   - '9001:9001'
+    volumes:
+      - ./build/docker/minio/data:/data
+    environment:
+      - MINIO_ROOT_USER=my_local_user
+      - MINIO_ROOT_PASSWORD=my_local_password
+      - MINIO_DEFAULT_BUCKETS=my-local-bucket
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
