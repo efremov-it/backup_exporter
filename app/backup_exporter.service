@@ -1,0 +1,12 @@
+[Unit]
+Description=wal-g/clickhouse-backup Wrapper-exporter
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/srv/backup_exporter
+ExecStart=/srv/backup_exporter --project test --backup_type clickhouse --backup_cron "*/1 * * * *"  # Command to start your application. You need to change for your needs.
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
