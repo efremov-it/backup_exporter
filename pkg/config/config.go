@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	Host, Port     string
+	BackupCommand  string
 	ProjectName    string
 	InstanceName   string
 	BackupType     string
@@ -44,8 +45,15 @@ func ParseFlags() (*Config, error) {
 
 	flag.Parse()
 
-	errUsage := fmt.Errorf("\n-----------------------------\nusage: main --project projectName --backup_type <psql|mysql|mariadb|mongodb|clickhouse> --backup_cron \"* * * * *\"\nSupport only for postgresql (--delete_cron \"*/1 * * * *\" --delete_retain 5)")
+	errUsage := fmt.Errorf("\n-----------------------------\nusage: backup_exporter --project projectName --backup_type <psql|mysql|mariadb|mongodb|clickhouse> --backup_cron \"* * * * *\" </usr/local/bin/wal-g> \nSupport only for postgresql (--delete_cron \"*/1 * * * *\" --delete_retain 5)")
 	config.DeleteEnable = false
+
+	// Get the first non-flag argument as BackupCommand
+	if arg := flag.Arg(0); arg != "" {
+		config.BackupCommand = arg
+	} else {
+		config.BackupCommand = "wal-g"
+	}
 
 	if config.ProjectName == "" {
 		return nil, errUsage

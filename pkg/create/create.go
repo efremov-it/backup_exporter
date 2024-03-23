@@ -25,8 +25,10 @@ type BackupService struct {
 }
 
 func (bs *BackupService) Create(ctx context.Context) {
-	var command string
 	var use_flags []string
+
+	// check if first argument is provided
+
 	// set backup command and arguments
 	if bs.config.BackupType != "clickhouse" {
 		// for psql we need to use BackupStorage
@@ -34,10 +36,12 @@ func (bs *BackupService) Create(ctx context.Context) {
 		if bs.config.BackupType == "psql" {
 			use_flags = append(use_flags, bs.config.BackupStorage)
 		}
-		command = "wal-g"
 	} else {
 		use_flags = append(use_flags, "create_remote")
-		command = "clickhouse-backup"
+		// check if value default use clickhouse-backup
+		if bs.config.BackupCommand == "wal-g" {
+			bs.config.BackupCommand = "clickhouse-backup"
+		}
 	}
 
 	if bs.config.ConfigFile != "" {
@@ -46,13 +50,13 @@ func (bs *BackupService) Create(ctx context.Context) {
 
 	// create backup. if backup failed try do it again 3 times
 	for i := 0; i < 3; i++ {
-		t, d, s, err := backup(command, use_flags...)
+		t, d, s, err := backup(bs.config.BackupCommand, use_flags...)
 		bs.metrics.SetResultCreate(collector.Result{t, d, s})
 		if err != nil {
-			fmt.Fprint(os.Stdout, []any{"Backup failed\nStart backup one more time\n"}...)
+			log.Println("Backup failed\nStart backup one more time\n", err)
 			time.Sleep(10 * time.Second)
 		} else {
-			print("Backup created\n")
+			fmt.Fprint(os.Stdout, "Backup created\n")
 			return
 		}
 	}
@@ -67,7 +71,7 @@ func (bs *BackupService) Retain(ctx context.Context) {
 		}
 		use_flags = append(use_flags, bs.config.BackupStorage)
 	} else {
-		print("Retain backup support only for postgresql\n")
+		log.Print("Retain backup support only for postgresql\n")
 	}
 
 	if bs.config.ConfigFile != "" {
@@ -75,12 +79,12 @@ func (bs *BackupService) Retain(ctx context.Context) {
 	}
 
 	// Retain backup
-	t, d, s, err := backup("wal-g", use_flags...)
+	t, d, s, err := backup(bs.config.BackupCommand, use_flags...)
 	bs.metrics.SetResultRetain(collector.Result{t, d, s})
 	if err != nil {
-		fmt.Fprint(os.Stdout, []any{"Retain backup failed\n"}...)
+		log.Println("Retain backup failed:\n", err)
 	} else {
-		print("Retain backup finished\n")
+		fmt.Fprint(os.Stdout, "Retain backup finished\n")
 		return
 	}
 }
@@ -94,10 +98,10 @@ func backup(command string, args ...string) (startTime time.Time, duration float
 		duration = float64(time.Since(startTime).Seconds())
 		if err != nil {
 			status = 1
-			log.Printf("Error:\n", err, string(output))
+			log.Println("Error:\n", err, string(output))
 		} else {
 			status = 0
-			log.Printf("Command Output: %s\n", string(output))
+			fmt.Fprintf(os.Stdout, "Command Output: %s\n", string(output))
 		}
 	}()
 	return

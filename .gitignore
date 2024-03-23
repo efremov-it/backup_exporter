@@ -2,4 +2,4 @@
 /build/docker/*/*/.walg.json
 /build/docker/*/*/config.yml
 /.vscode
-/app/main
+/app/backup_exporter

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 	"time"
 
@@ -64,7 +65,8 @@ func parseTime(tm string) (schedule Schedule, err error) {
 }
 
 func (c *cron) Run(ctx context.Context) error {
-	log.Println("cron started")
+	logger := log.New(os.Stdout, "", 0)
+	logger.Println("cron started")
 	for _, j := range c.jobs {
 		j := j
 		c.wg.Add(1)
@@ -72,16 +74,16 @@ func (c *cron) Run(ctx context.Context) error {
 			defer c.wg.Done()
 			now := time.Now()
 			nextExec := j.shed.Next(now)
-			log.Printf("job: %s next exec at: %s\n", j.name, nextExec.Format(time.RFC3339))
+			logger.Printf("job: %s next exec at: %s\n", j.name, nextExec.Format(time.RFC3339))
 			timer := time.NewTimer(nextExec.Sub(now))
 			for {
 				select {
 				case <-timer.C:
 					now := time.Now()
-					log.Printf("started job: %s\n", j.name)
+					logger.Printf("started job: %s\n", j.name)
 					j.cmd(ctx)
 					nextExec := j.shed.Next(now)
-					log.Printf("finished job: %s, next exec at: %s\n", j.name, nextExec.Format(time.RFC3339))
+					logger.Printf("finished job: %s, next exec at: %s\n", j.name, nextExec.Format(time.RFC3339))
 					timer.Reset(nextExec.Sub(now))
 				case <-ctx.Done(): // exit job runner
 					return
@@ -90,9 +92,9 @@ func (c *cron) Run(ctx context.Context) error {
 		}()
 	}
 	<-ctx.Done() // exit cron
-	log.Println("cron exiting")
+	logger.Println("cron exiting")
 	c.wg.Wait()
-	log.Println("cron all jobs stopped")
+	logger.Println("cron all jobs stopped")
 	return nil
 }
 
