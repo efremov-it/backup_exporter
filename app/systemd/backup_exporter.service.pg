@@ -7,10 +7,10 @@ Type=simple
 User=postgres
 Group=postgres
 WorkingDirectory=/srv/backup_exporter
-# Env depends on which version of psql you use. Also you can use flug <backup_storage>
+# Env depends on which version of postgres you use. Also you can use flug <backup_storage>
 Environment=PGDATA=/var/lib/postgresql/16/main
 # Command to start your application. You need to change for your needs.
-ExecStart=/srv/backup_exporter/backup_exporter --project test --backup_type psql --backup_cron "0 0 * * *" --delete_cron "30 0 * * *" --delete_retain 5
+ExecStart=/srv/backup_exporter/backup_exporter --project test --backup_type postgres --backup_cron "0 0 * * *" --delete_cron "30 0 * * *" --delete_retain 5
 Restart=on-failure
 StandardOutput=append:/var/log/backup_exporter.log
 StandardError=append:/var/log/backup_exporter_err.log

@@ -36,7 +36,7 @@ func ParseFlags() (*Config, error) {
 	flag.StringVar(&config.Port, "port", "9023", "Backup server port")
 	flag.StringVar(&config.ProjectName, "project", "", "Project name (Necessarily)")
 	flag.StringVar(&config.InstanceName, "instance", "", "Instance name (default is the hostname)")
-	flag.StringVar(&config.BackupType, "backup_type", "", "Backup type (psql|mysql|mariadb|mongodb|clickhouse) (Necessarily)")
+	flag.StringVar(&config.BackupType, "backup_type", "", "Backup type (postgres|mysql|mariadb|mongodb|clickhouse) (Necessarily)")
 	flag.StringVar(&config.ConfigFile, "config_file", "", "Path to config file (default is different for each backup tools)")
 	flag.StringVar(&config.BackupStorage, "backup_storage", "", "When uploading backups to storage, the user should pass the Postgres data directory as an argument (default: $PGDATA)")
 	flag.StringVar(&config.CronTime, "backup_cron", "0 2 * * *", "How often you should create your backup. Format crontab --backup_cron \"* * * * *\"")
@@ -45,7 +45,7 @@ func ParseFlags() (*Config, error) {
 
 	flag.Parse()
 
-	errUsage := fmt.Errorf("\n-----------------------------\nusage: backup_exporter --project projectName --backup_type <psql|mysql|mariadb|mongodb|clickhouse> --backup_cron \"* * * * *\" </usr/local/bin/wal-g> \nSupport only for postgresql (--delete_cron \"*/1 * * * *\" --delete_retain 5)")
+	errUsage := fmt.Errorf("\n-----------------------------\nusage: backup_exporter --project projectName --backup_type <postgres|mysql|mariadb|mongodb|clickhouse> --backup_cron \"* * * * *\" </usr/local/bin/wal-g> \nSupport only for postgresql (--delete_cron \"*/1 * * * *\" --delete_retain 5)")
 	config.DeleteEnable = false
 
 	// Get the first non-flag argument as BackupCommand
@@ -60,7 +60,7 @@ func ParseFlags() (*Config, error) {
 	}
 
 	switch config.BackupType {
-	case "psql":
+	case "postgres":
 		if config.BackupStorage == "" {
 			config.BackupStorage = os.Getenv("PGDATA")
 		}

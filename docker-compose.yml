@@ -5,16 +5,16 @@ services:
     container_name: postgres-test
     build:
       context: .
-      dockerfile: build/docker/psql/Dockerfile
+      dockerfile: build/docker/postgres/Dockerfile
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     environment:
       POSTGRES_DB: "postgres"
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgresql"
     volumes:
-      - ./build/docker/psql/data:/var/lib/postgresql/data
-      - ./build/docker/psql/config/.walg.json:/var/lib/postgresql/.walg.json
-      - ./build/docker/psql/config/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./build/docker/postgres/data:/var/lib/postgresql/data
+      - ./build/docker/postgres/config/.walg.json:/var/lib/postgresql/.walg.json
+      - ./build/docker/postgres/config/postgresql.conf:/etc/postgresql/postgresql.conf
       - ./app:/app
     depends_on:
       minio:

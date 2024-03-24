@@ -3,7 +3,7 @@
 
 Пример команды для запуска 
 ```
-main --project projectName --backup_type <psql|mysql|mariadb|mongodb|clickhouse> --cron "* * * * *" 
+main --project projectName --backup_type <postgres|mysql|mariadb|mongodb|clickhouse> --cron "* * * * *" 
 Support only for postgresql --delete_cron "*/1 * * * *" --delete_retain 5
 ```
 
@@ -45,7 +45,7 @@ Group=postgres
 - "AWS_ENDPOINT": "",
 - "WALE_S3_PREFIX": "",
 
-`make all` --> Поднимет все окружение и проведет ручной запукс создания бекапа psql
+`make all` --> Поднимет все окружение и проведет ручной запукс создания бекапа postgres
 Дальше в Makefile указаны примеры использования для разных баз данных
 
 Пример systemd файла в /app дире.

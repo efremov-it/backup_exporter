@@ -31,9 +31,9 @@ func (bs *BackupService) Create(ctx context.Context) {
 
 	// set backup command and arguments
 	if bs.config.BackupType != "clickhouse" {
-		// for psql we need to use BackupStorage
+		// for postgres we need to use BackupStorage
 		use_flags = append(use_flags, "backup-push")
-		if bs.config.BackupType == "psql" {
+		if bs.config.BackupType == "postgres" {
 			use_flags = append(use_flags, bs.config.BackupStorage)
 		}
 	} else {
@@ -65,7 +65,7 @@ func (bs *BackupService) Create(ctx context.Context) {
 
 func (bs *BackupService) Retain(ctx context.Context) {
 	var use_flags []string
-	if bs.config.BackupType == "psql" {
+	if bs.config.BackupType == "postgres" {
 		if bs.config.DeleteRetain != "" {
 			use_flags = append(use_flags, "delete", "retain", "FULL", bs.config.DeleteRetain, "--confirm")
 		}

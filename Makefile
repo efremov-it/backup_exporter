@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := up
-LIST := psql mysql mongo mariadb
+LIST := postgres mysql mongo mariadb
 
 up:
 	docker compose up -d
@@ -30,11 +30,11 @@ config:
 
 test:
 	go build -o app/backup_exporter cmd/main.go
-	docker compose exec -u postgres postgres /app/backup_exporter --project test --backup_type psql --backup_cron "*/1 * * * *" --delete_cron "*/1 * * * *" --delete_retain 5 /usr/local/bin/wal-g 
+	docker compose exec -u postgres postgres /app/backup_exporter --project test --backup_type postgres --backup_cron "*/1 * * * *" --delete_cron "*/1 * * * *" --delete_retain 5 /usr/local/bin/wal-g 
 
 tc:
 	go build -o app/backup_exporter cmd/main.go
-	docker compose exec -u postgres postgres /app/backup_exporter --project test --backup_type psqlq
+	docker compose exec -u postgres postgres /app/backup_exporter --project test --backup_type postgresq
 
 tm:
 	go build -o app/backup_exporter cmd/main.go
